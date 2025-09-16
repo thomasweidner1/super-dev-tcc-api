@@ -1,26 +1,52 @@
-from datetime import date
-
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
-
 from src.super_api.database.banco_dados import Base
 
 class UsuarioEntidade(Base):
-
-    __tablename__ = "Usuarios"
+    __tablename__ = "usuarios"
 
     id = Column(Integer, primary_key=True, index=True)
     nome_completo = Column(String(50), nullable=False)
-    data_nascimento: date = Column(Date(), nullable=False, name="data_nascimento")
-    cpf = Column(String(14), nullable=False)
-    email = Column(String(50), nullable=False)
-    senha = Column(String, nullable=False)
-    telefone = Column(String)
-    #endereco = Column(Endereco, nullable=False)
-    #cartao = Column(Cartao, nullable=False)
-    #preferencias = Column(Preferencias)
-    #foto_url = Column(String)
-    nivel = Column(String, nullable=False)
+    data_nascimento: Date = Column(Date(), nullable=False, name="data_nascimento")
+    cpf = Column(String(14), nullable=False, unique=True)
+    email = Column(String(50), nullable=False, unique=True)
+    senha = Column(String(500), nullable=False)
+    telefone = Column(String(50), nullable=True)
+    nivel = Column(String(50), nullable=True, default="comum", server_default="comum")
+
+    # Um usuário pode ter vários endereços
+    enderecos = relationship("EnderecoEntidade", back_populates="usuario")
+    # Um usuário pode ter várias hospedagens cadastradas
+    hospedagens = relationship("HospedagemEntidade", back_populates="usuario")
+
+class EnderecoEntidade(Base):
+    __tablename__ = "enderecos"
+
+    id = Column(Integer, primary_key=True)
+    rua = Column(String(100), nullable=False)
+    numero = Column(String(20), nullable=False)
+    cidade = Column(String(50), nullable=False)
+    estado = Column(String(50), nullable=False)
+    complemento = Column(String(50))
+
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    usuario = relationship("UsuarioEntidade", back_populates="enderecos")
+
+    # Um endereço pode ter zero ou uma hospedagem
+    hospedagem = relationship("HospedagemEntidade", back_populates="endereco", uselist=False)
+
+class HospedagemEntidade(Base):
+    __tablename__ = "hospedagens"
+
+    id = Column(Integer, primary_key=True)
+    nome = Column(String(100), nullable=False)
+    descricao = Column(String(255), nullable=True)
+
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    usuario = relationship("UsuarioEntidade", back_populates="hospedagens")
+
+    endereco_id = Column(Integer, ForeignKey("enderecos.id"), nullable=False)
+    endereco = relationship("EnderecoEntidade", back_populates="hospedagem")
 
     # id: number = 0,
     # nomeCompleto: string = '',
@@ -37,41 +63,3 @@ class UsuarioEntidade(Base):
     # preferencias?: Preferencias,
     # fotoUrl: string = '',
     # nivel: string = '',
-
-    # matriculas = relationship("MatriculaEntidade", back_populates="curso")
-
-
-
-# class CursoEntidade(Base):
-#     # Criar tabela
-#     __tablename__ = "cursos"
-#
-#     id = Column(Integer, primary_key=True, index=True)
-#     nome = Column(String(50), nullable=False)
-#     sigla = Column(String(3), nullable=False)
-#
-#     matriculas = relationship("MatriculaEntidade", back_populates="curso")
-#
-# class AlunoEntidade(Base):
-#     __tablename__ = "alunos"
-#
-#     id: int = Column(Integer, primary_key=True, index=True)
-#     nome: str = Column(String(20), nullable=False)
-#     sobrenome: str = Column(String(50), nullable=False)
-#     cpf: str = Column(String(14), nullable=False)
-#     data_nascimento: date = Column(Date(), nullable=False, name="data_nascimento")
-#
-#     matriculas = relationship("MatriculaEntidade", back_populates="aluno")
-#
-# class MatriculaEntidade(Base):
-#     __tablename__ = "matriculas"
-#
-#     id: int = Column(Integer, primary_key=True, index=True)
-#     aluno_id: int = Column(Integer, ForeignKey("alunos.id"), nullable=False)
-#     curso_id: int = Column(Integer, ForeignKey(CursoEntidade.id), nullable=False)
-#     data_matricula: date = Column(Date, nullable=True, default=date.today)
-#
-#     # relacionamentos permite acessa m.aluno e m.curso
-#     aluno = relationship("AlunoEntidade", back_populates="matriculas", lazy='joined')
-#     curso = relationship("CursoEntidade", back_populates="matriculas", lazy='joined')
-#

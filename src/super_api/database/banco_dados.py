@@ -3,7 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
@@ -26,7 +26,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-
 def popular_banco_dados():
     caminho_atual = Path(os.path.dirname(__file__))
     caminho_raiz = caminho_atual.parent.parent.parent
@@ -43,3 +42,4 @@ def popular_banco_dados():
             conn.execute(text(sql_command + ";"))
             conn.commit()
         print("Dados inseridos com sucesso a partir de db_seed.sql")
+

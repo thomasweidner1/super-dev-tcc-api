@@ -9,6 +9,7 @@ from src.super_api.schemas.user_schema import UsuarioCadastro
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
+
 @router.post("/login")
 def login_endpoint(data: dict, db: Session = Depends(get_db)):
     email = data.get("email")
@@ -35,7 +36,7 @@ def cadastro_usuario(form: UsuarioCadastro, db: Session = Depends(get_db)):
             data_nascimento=form.data_nascimento,
             cpf=form.cpf,
             email=form.email,
-            senha=hash_senha,
+            senha=hash_senha
         )
         db.add(usuario)
         db.commit()

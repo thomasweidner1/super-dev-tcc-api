@@ -18,10 +18,11 @@ def criptografar_senha(senha: str) -> str:
 def verificar_senha(senha: str, hash_senha: str) -> bool:
     return pwd_context.verify(senha, hash_senha)
 
-def gerar_token(usuario_id: int):
+def gerar_token(usuario_id: int, email: str):
     try:
         payload = {
             "sub": str(usuario_id),
+            "email": email,
             "exp": datetime.now(timezone.utc) + timedelta(hours=12)
         }
         return jwt.encode(payload, SECRET_KEY, algorithm="HS256")

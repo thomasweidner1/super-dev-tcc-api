@@ -23,7 +23,6 @@ class UsuarioCadastro(BaseModel):
     cpf: str
     email: str
     senha: str
-    nivel: str
     endereco: Endereco
 
     class Config:

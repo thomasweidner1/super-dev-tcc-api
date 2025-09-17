@@ -18,6 +18,8 @@ class UsuarioEntidade(Base):
     enderecos = relationship("EnderecoEntidade", back_populates="usuario")
     # Um usuário pode ter várias hospedagens cadastradas
     hospedagens = relationship("HospedagemEntidade", back_populates="usuario")
+    # Um usuário pode ter vários cartoes
+    cartoes = relationship("CartaoEntidade", back_populates="usuario")
 
 class EnderecoEntidade(Base):
     __tablename__ = "enderecos"
@@ -34,6 +36,19 @@ class EnderecoEntidade(Base):
 
     # Um endereço pode ter zero ou uma hospedagem
     hospedagem = relationship("HospedagemEntidade", back_populates="endereco", uselist=False)
+
+class CartaoEntidade(Base):
+    __tablename__ = "cartoes"
+
+    id = Column(Integer, primary_key=True)
+    numero = Column(String(16), nullable=False)
+    nome_titular = Column(String(50), nullable=False)
+    validade: Date = Column(Date(), nullable=False, name="validade")
+    cvv = Column(String(3), nullable=False)
+    cpf_tituar = Column(String(14), nullable=False, unique=True)
+
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    usuario = relationship("UsuarioEntidade", back_populates="cartoes")
 
 class HospedagemEntidade(Base):
     __tablename__ = "hospedagens"

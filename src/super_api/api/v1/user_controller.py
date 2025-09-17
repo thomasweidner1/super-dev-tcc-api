@@ -42,7 +42,7 @@ def cadastro_usuario(form: UsuarioCadastro, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(usuario)
 
-        token = gerar_token(usuario.id)
+        token = gerar_token(usuario.id, usuario.email)
 
         endereco = EnderecoEntidade(
             rua=form.endereco.rua,

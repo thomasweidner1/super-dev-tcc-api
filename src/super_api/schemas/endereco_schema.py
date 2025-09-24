@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Endereco(BaseModel):
@@ -6,4 +6,4 @@ class Endereco(BaseModel):
     numero: str
     cidade: str
     estado: str
-    cep: str
+    cep: str = Field(default="")

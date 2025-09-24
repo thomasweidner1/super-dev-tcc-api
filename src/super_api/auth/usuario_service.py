@@ -7,8 +7,7 @@ def login_usuario(db: Session, email: str, senha: str):
     usuario = db.query(UsuarioEntidade).filter_by(email=email).first()
     if not usuario or not verificar_senha(senha, usuario.senha):
         return None
-
-    token = gerar_token(usuario.id)
+    token = gerar_token(usuario.id, usuario.email)
 
     return {
         "usuario": {
@@ -58,3 +57,6 @@ def cadastrar_usuario(db: Session, form):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro ao cadastrar usuário: {str(e)}")
+
+def logout_usuario(db: Session):
+    

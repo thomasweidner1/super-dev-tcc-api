@@ -1,13 +1,41 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from src.super_api.auth.auth import gerar_token, criptografar_senha
+from src.super_api.auth.auth import gerar_token, criptografar_senha, verificar_token
 from src.super_api.auth.usuario_service import login_usuario, cadastrar_usuario
 from src.super_api.database.modelos import UsuarioEntidade, EnderecoEntidade
 from src.super_api.dependencias import get_db
-from src.super_api.schemas.user_schema import UsuarioCadastro
+from src.super_api.schemas.endereco_schema import Endereco
+from src.super_api.schemas.user_schema import UsuarioCadastro, Usuario
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
+
+@router.get("/me")
+def obter_dados(user_id: int = Depends(verificar_token), db: Session = Depends(get_db)):
+    usuario_db = db.query(UsuarioEntidade).filter(UsuarioEntidade.id == user_id).first()
+    if not usuario_db:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    endereco_entidade = usuario_db.enderecos[0] if usuario_db.enderecos else None
+
+    endereco = Endereco(
+        rua=endereco_entidade.rua,
+        numero=endereco_entidade.numero,
+        cidade=endereco_entidade.cidade,
+        estado=endereco_entidade.estado,
+        # cep=endereco_entidade.cep,
+    ) if endereco_entidade else None
+
+    usuario = Usuario(
+        id=usuario_db.id,
+        nomeCompleto=usuario_db.nome_completo,  # usando alias
+        dataNascimento=usuario_db.data_nascimento,
+        cpf=usuario_db.cpf,
+        email=usuario_db.email,
+        senha=usuario_db.senha,
+        nivel=usuario_db.nivel,
+        endereco=endereco
+    )
+    return usuario
 
 
 @router.post("/login")

@@ -36,8 +36,12 @@ def verificar_token(Authorization: str = Header(...)):
     token = Authorization.split(" ")[1]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return payload.get("sub")  # get evita KeyError
+        user_id = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Token inválido")
+        return int(user_id)
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expirado")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token inválido")
+

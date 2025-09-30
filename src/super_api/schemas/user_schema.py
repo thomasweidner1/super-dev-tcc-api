@@ -1,6 +1,8 @@
 from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel, Field
-from src.super_api.schemas.endereco_schema import Endereco
+from src.super_api.schemas.endereco_schema import Endereco, EnderecoEditar
 
 
 class Usuario(BaseModel):
@@ -12,10 +14,17 @@ class Usuario(BaseModel):
     senha: str
     nivel: str
     endereco: Endereco
+    telefone: str
+    idioma: Optional[str]
+    tema: Optional[str]
+    notificacoes: Optional[bool]
+    foto_url: Optional[str]
+
 
     class Config:
         populate_by_name = True
         allow_population_by_field_name = True
+        orm_mode = True
 
 class UsuarioCadastro(BaseModel):
     nome_completo: str = Field(alias="nomeCompleto")
@@ -23,26 +32,26 @@ class UsuarioCadastro(BaseModel):
     cpf: str
     email: str
     senha: str
+    telefone: str
     endereco: Endereco
 
     class Config:
         populate_by_name = True
         allow_population_by_field_name = True
+        orm_mode = True
 
+class UsuarioEditar(BaseModel):
+    nome_completo: Optional[str] = Field(alias="nomeCompleto")
+    data_nascimento: Optional[datetime] = Field(alias="dataNascimento")
+    senha: Optional[str]
+    telefone: Optional[str]
+    endereco: Optional[EnderecoEditar]
+    idioma: Optional[str]
+    tema: Optional[str]
+    notificacoes: Optional[bool]
+    foto_url: Optional[str]
 
-# class AlunoCadastro(BaseModel):
-#     nome: str = Field()
-#     sobrenome: str = Field()
-#     cpf: str = Field()
-#     data_nascimento: datetime = Field(alias="dataNascimento")
-#     class Config:
-#         allow_population_by_field_name = True
-#
-#
-# class AlunoEditar(BaseModel):
-#     nome: str = Field()
-#     sobrenome: str = Field()
-#     cpf: str = Field()
-#     data_nascimento: datetime = Field(alias="dataNascimento")
-#     class Config:
-#         allow_population_by_field_name = True
+    class Config:
+        populate_by_name = True
+        allow_population_by_field_name = True
+        orm_mode = True

@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
-from src.super_api.auth.auth import gerar_token, criptografar_senha, verificar_token
-from src.super_api.auth.usuario_service import login_usuario, cadastrar_usuario
+from src.super_api.auth.auth import gerar_token, criptografar_senha, verificar_token, get_current_user
+from src.super_api.auth.usuario_service import login_usuario, cadastrar_usuario, atualizar_usuario_parcial
 from src.super_api.database.modelos import UsuarioEntidade, EnderecoEntidade
 from src.super_api.dependencias import get_db
 from src.super_api.schemas.endereco_schema import Endereco
-from src.super_api.schemas.user_schema import UsuarioCadastro, Usuario
+from src.super_api.schemas.user_schema import UsuarioCadastro, Usuario, UsuarioEditar
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
@@ -22,17 +21,24 @@ def obter_dados(user_id: int = Depends(verificar_token), db: Session = Depends(g
         numero=endereco_entidade.numero,
         cidade=endereco_entidade.cidade,
         estado=endereco_entidade.estado,
-        # cep=endereco_entidade.cep,
+        cep=endereco_entidade.cep,
+        complemento=endereco_entidade.complemento,
+        bairro=endereco_entidade.bairro,
     ) if endereco_entidade else None
 
     usuario = Usuario(
         id=usuario_db.id,
-        nomeCompleto=usuario_db.nome_completo,  # usando alias
+        nomeCompleto=usuario_db.nome_completo,
         dataNascimento=usuario_db.data_nascimento,
         cpf=usuario_db.cpf,
         email=usuario_db.email,
         senha=usuario_db.senha,
+        telefone=usuario_db.telefone,
         nivel=usuario_db.nivel,
+        foto_url=usuario_db.foto_url,
+        idioma=usuario_db.idioma,
+        tema=usuario_db.tema,
+        notificacoes=usuario_db.notificacoes,
         endereco=endereco
     )
     return usuario
@@ -64,7 +70,8 @@ def cadastro_usuario(form: UsuarioCadastro, db: Session = Depends(get_db)):
             data_nascimento=form.data_nascimento,
             cpf=form.cpf,
             email=form.email,
-            senha=hash_senha
+            senha=hash_senha,
+            telefone=form.telefone,
         )
         db.add(usuario)
         db.commit()
@@ -77,7 +84,10 @@ def cadastro_usuario(form: UsuarioCadastro, db: Session = Depends(get_db)):
             numero=form.endereco.numero,
             cidade=form.endereco.cidade,
             estado=form.endereco.estado,
-            usuario_id=usuario.id
+            complemento=form.endereco.complemento,
+            cep=form.endereco.cep,
+            usuario_id=usuario.id,
+            bairro=form.endereco.bairro,
         )
         db.add(endereco)
         db.commit()
@@ -96,13 +106,36 @@ def cadastro_usuario(form: UsuarioCadastro, db: Session = Depends(get_db)):
                 "numero": endereco.numero,
                 "cidade": endereco.cidade,
                 "estado": endereco.estado,
-                "complemento": endereco.complemento
+                "cep": endereco.cep,
+                "bairro": endereco.bairro,  # <-- incluído
+                "complemento": endereco.complemento  # <-- incluído
             },
             "token": token,
         }
-
     except Exception as e:
-        import traceback
-        traceback.print_exc()  # mostra o erro completo no console
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+@router.patch("/me", response_model=Usuario)
+def atualizar_usuario(
+    form: UsuarioEditar,
+    db: Session = Depends(get_db),
+    usuario_atual=Depends(get_current_user)
+):
+    usuario = db.query(UsuarioEntidade).filter_by(id=usuario_atual.id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    dados = form.dict(exclude_unset=True)
+
+    for campo, valor in dados.items():
+        if campo != "endereco":
+            setattr(usuario, campo, valor)
+
+    if "endereco" in dados and dados["endereco"] is not None:
+        for campo, valor in dados["endereco"].items():
+            setattr(usuario.enderecos, campo, valor)
+
+    db.commit()
+    db.refresh(usuario)
+    return usuario
 

@@ -4,6 +4,11 @@ from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, Header
 from dotenv import load_dotenv
 import os
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from src.super_api.database.modelos import UsuarioEntidade
+from src.super_api.dependencias import get_db
 
 jwt = importlib.import_module("jwt")
 
@@ -45,3 +50,9 @@ def verificar_token(Authorization: str = Header(...)):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token inválido")
 
+
+def get_current_user(user_id: int = Depends(verificar_token), db: Session = Depends(get_db)):
+    usuario = db.query(UsuarioEntidade).filter(UsuarioEntidade.id == user_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    return usuario

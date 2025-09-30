@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from typing import Optional
+from pydantic import BaseModel
 
 
 class Endereco(BaseModel):
@@ -6,4 +7,23 @@ class Endereco(BaseModel):
     numero: str
     cidade: str
     estado: str
-    cep: str = Field(default="")
+    cep: str
+    bairro: str
+    complemento: str
+
+    class Config:
+        orm_mode = True
+
+
+class EnderecoEditar(BaseModel):
+    rua: Optional[str]
+    numero: Optional[str]
+    cidade: Optional[str]
+    estado: Optional[str]
+    cep: Optional[str]
+    bairro: Optional[str]
+    complemento: Optional[str]
+
+    class Config:
+        orm_mode = True
+

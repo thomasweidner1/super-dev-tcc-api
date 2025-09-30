@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from src.super_api.database.banco_dados import Base
 
@@ -13,6 +13,11 @@ class UsuarioEntidade(Base):
     senha = Column(String(500), nullable=False)
     telefone = Column(String(50), nullable=True)
     nivel = Column(String(50), nullable=True, default="comum", server_default="comum")
+    foto_url = Column(String(500))
+    #preferencias
+    idioma = Column(String(50), default="pt_br", server_default="pt_br")
+    tema = Column(String(50), default="claro", server_default="claro")
+    notificacoes = Column(Boolean, default=False)
 
     # Um usuário pode ter vários endereços
     enderecos = relationship("EnderecoEntidade", back_populates="usuario")
@@ -29,9 +34,12 @@ class EnderecoEntidade(Base):
     numero = Column(String(20), nullable=False)
     cidade = Column(String(50), nullable=False)
     estado = Column(String(50), nullable=False)
-    complemento = Column(String(50))
+    complemento = Column(String(500))
+    bairro = Column(String(50))
+    cep = Column(String(9))
 
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+
     usuario = relationship("UsuarioEntidade", back_populates="enderecos")
 
     # Um endereço pode ter zero ou uma hospedagem
@@ -48,6 +56,7 @@ class CartaoEntidade(Base):
     cpf_tituar = Column(String(14), nullable=False, unique=True)
 
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+
     usuario = relationship("UsuarioEntidade", back_populates="cartoes")
 
 class HospedagemEntidade(Base):
@@ -58,9 +67,9 @@ class HospedagemEntidade(Base):
     descricao = Column(String(255), nullable=True)
 
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
-    usuario = relationship("UsuarioEntidade", back_populates="hospedagens")
-
     endereco_id = Column(Integer, ForeignKey("enderecos.id"), nullable=False)
+
+    usuario = relationship("UsuarioEntidade", back_populates="hospedagens")
     endereco = relationship("EnderecoEntidade", back_populates="hospedagem")
 
     # id: number = 0,

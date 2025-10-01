@@ -5,6 +5,14 @@ from pydantic import BaseModel, Field
 from src.super_api.schemas.endereco_schema import Endereco, EnderecoEditar
 
 
+class UsuarioResponse(BaseModel):
+    id: int
+    nome_completo: str
+    email: str
+    nivel: str
+
+
+
 class Usuario(BaseModel):
     id: int | None = None
     nome_completo: str = Field(alias="nomeCompleto")

@@ -5,7 +5,7 @@ from src.super_api.auth.usuario_service import login_usuario, cadastrar_usuario,
 from src.super_api.database.modelos import UsuarioEntidade, EnderecoEntidade
 from src.super_api.dependencias import get_db
 from src.super_api.schemas.endereco_schema import Endereco
-from src.super_api.schemas.user_schema import UsuarioCadastro, Usuario, UsuarioEditar
+from src.super_api.schemas.user_schema import UsuarioCadastro, Usuario, UsuarioEditar, UsuarioResponse
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
@@ -115,7 +115,7 @@ def cadastro_usuario(form: UsuarioCadastro, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
-@router.patch("/me", response_model=Usuario)
+@router.patch("/me", response_model=UsuarioResponse)
 def atualizar_usuario(
     form: UsuarioEditar,
     db: Session = Depends(get_db),
@@ -133,9 +133,15 @@ def atualizar_usuario(
 
     if "endereco" in dados and dados["endereco"] is not None:
         for campo, valor in dados["endereco"].items():
-            setattr(usuario.enderecos, campo, valor)
+            setattr(usuario.enderecos[0], campo, valor)
 
     db.commit()
     db.refresh(usuario)
-    return usuario
+    return UsuarioResponse(
+        id=usuario.id,
+        nome_completo=usuario.nome_completo,
+        email=usuario.email,
+        nivel=usuario.nivel
+    )
+
 

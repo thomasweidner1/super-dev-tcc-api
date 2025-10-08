@@ -16,3 +16,8 @@ class CartaoCadastro(BaseModel):
     cpf_titular: str = Field(alias="cartaoCPF")
     cvv: str = Field(alias="cartaoCVV")
     validade: datetime = Field(alias="cartaoValidade")
+
+class CartaoResponse(BaseModel):
+    numero: str = Field(alias="cartaoNumero")
+    nome_titular: str = Field(alias="cartaoNome")
+    validade: datetime = Field(alias="cartaoValidade")

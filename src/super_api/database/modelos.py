@@ -53,7 +53,7 @@ class CartaoEntidade(Base):
     nome_titular = Column(String(50), nullable=False)
     validade: Date = Column(Date(), nullable=False, name="validade")
     cvv = Column(String(3), nullable=False)
-    cpf_tituar = Column(String(14), nullable=False, unique=True)
+    cpf_titular = Column(String(14), nullable=False)
 
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
 

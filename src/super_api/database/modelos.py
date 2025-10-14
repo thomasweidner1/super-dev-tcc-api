@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean
+import datetime
+
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean, SmallInteger
 from sqlalchemy.orm import relationship
 from src.super_api.database.banco_dados import Base
 
@@ -48,14 +50,13 @@ class EnderecoEntidade(Base):
 class CartaoEntidade(Base):
     __tablename__ = "cartoes"
 
-    id = Column(Integer, primary_key=True)
-    numero = Column(String(16), nullable=False)
-    nome_titular = Column(String(50), nullable=False)
-    validade: Date = Column(Date(), nullable=False, name="validade")
-    cvv = Column(String(3), nullable=False)
-    cpf_titular = Column(String(14), nullable=False)
-
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    nome_titular = Column(String(120), nullable=False)
+    bandeira = Column(String(50), nullable=True)
+    numero = Column(String(64), nullable=False)
+    mes_vencimento = Column(SmallInteger, nullable=False)
+    ano_vencimento = Column(SmallInteger, nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id", ondelete="CASCADE"), nullable=False)
 
     usuario = relationship("UsuarioEntidade", back_populates="cartoes")
 

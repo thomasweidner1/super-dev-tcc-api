@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean, SmallInteger
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean, SmallInteger, Text, Float
 from sqlalchemy.orm import relationship
 from src.super_api.database.banco_dados import Base
 
@@ -63,28 +63,36 @@ class CartaoEntidade(Base):
 class HospedagemEntidade(Base):
     __tablename__ = "hospedagens"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     nome = Column(String(100), nullable=False)
-    descricao = Column(String(255), nullable=True)
+    descricao = Column(Text, nullable=False)
+    preco_noite = Column(Float, nullable=False)
+    capacidade = Column(Integer, nullable=False)
+    tipo = Column(String(50), nullable=False)
+    ativo = Column(Boolean, default=True)
 
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     endereco_id = Column(Integer, ForeignKey("enderecos.id"), nullable=False)
 
     usuario = relationship("UsuarioEntidade", back_populates="hospedagens")
     endereco = relationship("EnderecoEntidade", back_populates="hospedagem")
+    imagens = relationship("ImagemHospedagemEntidade", back_populates="hospedagem", cascade="all, delete-orphan")
+    comodidades = relationship("ComodidadeEntidade", back_populates="hospedagem", cascade="all, delete-orphan")
 
-    # id: number = 0,
-    # nomeCompleto: string = '',
-    # dataNascimento: Date = new
-    # Date(),
-    # cpf: string = '',
-    # email: string = '',
-    # senha: string = '',
-    # telefone: string = '',
-    # endereco: Endereco = new
-    # Endereco(),
-    # cartao: Cartao = new
-    # Cartao(),
-    # preferencias?: Preferencias,
-    # fotoUrl: string = '',
-    # nivel: string = '',
+class ImagemHospedagemEntidade(Base):
+    __tablename__ = "imagens_hospedagem"
+
+    id = Column(Integer, primary_key=True)
+    url = Column(String(255), nullable=False)
+    hospedagem_id = Column(Integer, ForeignKey("hospedagens.id"), nullable=False)
+
+    hospedagem = relationship("HospedagemEntidade", back_populates="imagens")
+
+class ComodidadeEntidade(Base):
+    __tablename__ = "comodidades"
+
+    id = Column(Integer, primary_key=True)
+    nome = Column(String(100), nullable=False)
+    hospedagem_id = Column(Integer, ForeignKey("hospedagens.id"), nullable=False)
+
+    hospedagem = relationship("HospedagemEntidade", back_populates="comodidades")

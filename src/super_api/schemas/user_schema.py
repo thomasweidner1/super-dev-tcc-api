@@ -19,7 +19,6 @@ class Usuario(BaseModel):
     data_nascimento: datetime = Field(alias="dataNascimento")
     cpf: str
     email: str
-    senha: str
     nivel: str
     endereco: Endereco
     telefone: str

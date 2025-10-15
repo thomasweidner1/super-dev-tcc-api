@@ -7,7 +7,7 @@ def login_usuario(db: Session, email: str, senha: str):
     usuario = db.query(UsuarioEntidade).filter_by(email=email).first()
     if not usuario or not verificar_senha(senha, usuario.senha):
         return None
-    token = gerar_token(usuario.id, usuario.email)
+    token = gerar_token(usuario.id, usuario.email, usuario.nivel)
 
     return {
         "token": token

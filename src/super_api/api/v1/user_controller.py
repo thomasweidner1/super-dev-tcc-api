@@ -42,7 +42,7 @@ def cadastro_usuario(form: UsuarioCadastro, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(usuario)
 
-        token = gerar_token(usuario.id, usuario.email)
+        token = gerar_token(usuario.id, usuario.email,  usuario.nivel)
 
         endereco = EnderecoEntidade(
             rua=form.endereco.rua,
@@ -88,7 +88,6 @@ def obter_dados(user_id: int = Depends(verificar_token), db: Session = Depends(g
         dataNascimento=usuario_db.data_nascimento,
         cpf=usuario_db.cpf,
         email=usuario_db.email,
-        senha=usuario_db.senha,
         telefone=usuario_db.telefone,
         nivel=usuario_db.nivel,
         foto_url=usuario_db.foto_url,

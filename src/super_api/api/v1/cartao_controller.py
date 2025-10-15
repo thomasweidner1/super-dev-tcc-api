@@ -45,31 +45,24 @@ def mascarar_numero(numero: str) -> str:
 
 
 @router.post("/cadastrar", response_model=CartaoResponse, status_code=status.HTTP_201_CREATED)
-def cadastrar_cartao(
-    cartao: CartaoCadastro,
-    db: Session = Depends(get_db),
-    usuario_atual=Depends(get_current_user)
-):
-    # 1) Validação
+def cadastrar_cartao(cartao: CartaoCadastro, db: Session = Depends(get_db), usuario_atual=Depends(get_current_user)):
+
     digitos = ''.join(filter(str, cartao.numero))
  #   if not validacao(digitos):
  #       raise HTTPException(status_code=400, detail="Número de cartão inválido.")
 
-    # 2) Valida expiracao (mês/ano no futuro)
     agora = datetime.utcnow()
     ano_vencimento = cartao.ano_vencimento
     mes_vencimento = cartao.mes_vencimento
     if ano_vencimento < agora.year or (ano_vencimento == agora.year and mes_vencimento < agora.month):
         raise HTTPException(status_code=400, detail="Cartão expirado.")
 
-    # 3) Detecta bandeira e prepara campos a salvar
     bandeira = definir_bandeira(digitos)
     formatado = mascarar_numero(digitos)
 
     if cartao.cvv:
         pass
 
-    # 4) Persistir CartaoEntidade (salvando apenas masked + last4)
     novo_cartao = CartaoEntidade(
         usuario_id=usuario_atual.id,
         nome_titular=cartao.nome_titular,

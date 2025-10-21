@@ -64,7 +64,6 @@ def cadastro_usuario(form: UsuarioCadastro, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
-# Obter dados do usuário
 @router.get("/me")
 def obter_dados(user_id: int = Depends(verificar_token), db: Session = Depends(get_db)):
     usuario_db = db.query(UsuarioEntidade).filter(UsuarioEntidade.id == user_id).first()
@@ -98,7 +97,6 @@ def obter_dados(user_id: int = Depends(verificar_token), db: Session = Depends(g
     )
     return usuario
 
-# Editar dados do usuário na tela de perfil
 @router.patch("/me", response_model=UsuarioResponse)
 def atualizar_usuario(
     form: UsuarioEditar,

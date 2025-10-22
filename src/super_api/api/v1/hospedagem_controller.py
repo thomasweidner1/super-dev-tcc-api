@@ -10,6 +10,27 @@ router = APIRouter(prefix="/hospedagem", tags=["Hospedagem"])
 
 @router.post("/cadastrar", response_model=HospedagemResponse, status_code=status.HTTP_201_CREATED)
 def cadastrar_hospedagem(form: HospedagemCadastro, db: Session = Depends(get_db), usuario=Depends(get_current_user)):
+    if usuario.nivel not in ['host_standard', 'host_plus', 'host_premium']:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não tem permissão"
+        )
+
+    limites = {
+        'host_standard': 1,
+        'host_plus': 3,
+        'host_premium': float('inf')
+    }
+
+    qtd_hosp = db.query(HospedagemEntidade).filter(HospedagemEntidade.usuario_id == usuario.id).count()
+    limite = limites.get(usuario.nivel)
+
+    if qtd_hosp >= limite:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Limite de hospedagens atingido para o plano {usuario.nivel}."
+        )
+
     try:
         nova_hospedagem = HospedagemEntidade(
             nome=form.nome,
@@ -23,22 +44,15 @@ def cadastrar_hospedagem(form: HospedagemCadastro, db: Session = Depends(get_db)
         )
 
         db.add(nova_hospedagem)
-        db.commit()
-        db.refresh(nova_hospedagem)
+        db.flush()
 
         if form.imagens:
             for url in form.imagens:
-                imagem = ImagemHospedagemEntidade(
-                    url=url, hospedagem_id=nova_hospedagem.id
-                )
-                db.add(imagem)
+                db.add(ImagemHospedagemEntidade(url=url, hospedagem_id=nova_hospedagem.id))
 
         if form.comodidades:
             for nome in form.comodidades:
-                comodidade = ComodidadeEntidade(
-                    nome=nome, hospedagem_id=nova_hospedagem.id
-                )
-                db.add(comodidade)
+                db.add(ComodidadeEntidade(nome=nome, hospedagem_id=nova_hospedagem.id))
 
         db.commit()
         db.refresh(nova_hospedagem)
@@ -51,6 +65,7 @@ def cadastrar_hospedagem(form: HospedagemCadastro, db: Session = Depends(get_db)
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Erro ao cadastrar hospedagem: {str(e)}",
         )
+
 
 @router.get("/listar")
 def listar_hospedagens(

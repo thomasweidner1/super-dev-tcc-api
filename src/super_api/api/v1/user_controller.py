@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from src.super_api.auth.auth import gerar_token, criptografar_senha, verificar_token, get_current_user
 from src.super_api.auth.usuario_service import login_usuario
 from src.super_api.database.modelos import UsuarioEntidade, EnderecoEntidade, CartaoEntidade
 from src.super_api.dependencias import get_db
 from src.super_api.schemas.endereco_schema import Endereco
-from src.super_api.schemas.user_schema import UsuarioCadastro, Usuario, UsuarioEditar, UsuarioResponse
+from src.super_api.schemas.user_schema import UsuarioCadastro, Usuario, UsuarioEditar, UsuarioResponse, UsuarioCartao
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
@@ -125,3 +125,32 @@ def atualizar_usuario(
         email=usuario.email,
         nivel=usuario.nivel
     )
+
+@router.patch("/tornar-host", status_code=status.HTTP_200_OK)
+def tornar_host(dados: UsuarioCartao, db: Session = Depends(get_db), usuario: UsuarioEntidade=Depends(get_current_user)):
+    niveis_validos = ["host_standard", "host_plus", "host_premium"]
+
+    if dados.nivel not in niveis_validos:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nível de assinatura inválido."
+        )
+
+    # Aqui troquei o "..." pelo modelo correto
+    cartao = db.query(CartaoEntidade).filter_by(id=dados.id_cartao, usuario_id=usuario.id).first()
+    if not cartao:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cartão não encontrado para este usuário."
+        )
+
+    usuario.nivel = dados.nivel
+    db.commit()
+    db.refresh(usuario)
+
+    novo_token = gerar_token(usuario.id, usuario.email, usuario.nivel)
+
+    return {
+        "mensagem": f"Usuário atualizado para {usuario.nivel}.",
+        "novoToken": novo_token
+    }

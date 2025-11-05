@@ -62,3 +62,12 @@ class UsuarioEditar(BaseModel):
         populate_by_name = True
         allow_population_by_field_name = True
         orm_mode = True
+
+class UsuarioCartao(BaseModel):
+    nivel: str
+    id_cartao: int = Field(alias='idCartao')
+
+    class Config:
+        populate_by_name = True
+        allow_populaion_by_field_name = True
+        orm_mode = True

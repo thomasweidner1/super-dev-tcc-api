@@ -11,10 +11,12 @@ router = APIRouter(prefix="/usuarios/cartoes", tags=["Cartoes"])
 
 
 def validacao(numero: str) -> bool:
-    numero = ''.join(filter(str, numero))
+    numeros = ''.join(filter(str, numero)).replace(' ', '')
+
     def digitos_de(n):
         return [int(d) for d in n]
-    digitos = digitos_de(numero)
+
+    digitos = digitos_de(numeros)
     soma_impar = sum(digitos[-1::-2])
     soma_par = 0
     for d in digitos[-2::-2]:
@@ -22,13 +24,14 @@ def validacao(numero: str) -> bool:
         soma_par += duplicado if duplicado < 10 else duplicado - 9
     return (soma_impar + soma_par) % 10 == 0
 
+
 def definir_bandeira(numero: str) -> str:
     n = numero.replace(" ", "")
     if n.startswith(("4",)):
         return "Visa"
-    if n[:2] in ("51","52","53","54","55") or (len(n) >= 4 and 2221 <= int(n[:4]) <= 2720):
+    if n[:2] in ("51", "52", "53", "54", "55") or (len(n) >= 4 and 2221 <= int(n[:4]) <= 2720):
         return "Mastercard"
-    if n.startswith(("34","37")):
+    if n.startswith(("34", "37")):
         return "American Express"
     if n.startswith("6"):
         return "Discover"
@@ -46,10 +49,9 @@ def mascarar_numero(numero: str) -> str:
 
 @router.post("/cadastrar", response_model=CartaoResponse, status_code=status.HTTP_201_CREATED)
 def cadastrar_cartao(cartao: CartaoCadastro, db: Session = Depends(get_db), usuario_atual=Depends(get_current_user)):
-
     digitos = ''.join(filter(str, cartao.numero))
- #   if not validacao(digitos):
- #       raise HTTPException(status_code=400, detail="Número de cartão inválido.")
+    if not validacao(digitos):
+        raise HTTPException(status_code=400, detail="Número de cartão inválido.")
 
     agora = datetime.utcnow()
     ano_vencimento = cartao.ano_vencimento
@@ -79,15 +81,15 @@ def cadastrar_cartao(cartao: CartaoCadastro, db: Session = Depends(get_db), usua
 
 
 @router.get("/meus-cartoes", response_model=list[CartaoResponse])
-def listar_cartoes(db: Session = Depends(get_db),usuario_atual=Depends(get_current_user)):
+def listar_cartoes(db: Session = Depends(get_db), usuario_atual=Depends(get_current_user)):
     cartoes = db.query(CartaoEntidade).filter_by(usuario_id=usuario_atual.id).all()
     if cartoes:
         return cartoes
     raise HTTPException(status_code=404, detail="Nenhum cartão encontrado")
 
+
 @router.delete("/apagar/{cartao_id}", status_code=status.HTTP_204_NO_CONTENT)
 def deletar_cartao(cartao_id: int, db: Session = Depends(get_db), usuario_atual=Depends(get_current_user)):
-
     cartao = db.query(CartaoEntidade).filter_by(id=cartao_id).first()
     if not cartao:
         raise HTTPException(status_code=404, detail="Cartão não encontrado")

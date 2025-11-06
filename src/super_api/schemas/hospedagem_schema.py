@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 
+from src.super_api.schemas.endereco_schema import Endereco
+
 
 class Hospedagem(BaseModel):
     nome: str
@@ -17,8 +19,13 @@ class Hospedagem(BaseModel):
         orm_mode = True
 
 class HospedagemCadastro(Hospedagem):
-    usuario_id: int = Field(..., alias="usuarioId")
-    endereco_id: int = Field(..., alias="enderecoId")
+    nome: str
+    descricao: str
+    preco_noite: float = Field(alias="precoNoite")
+    capacidade: int
+    tipo: str
+    ativo: bool = True
+    endereco: Endereco
     imagens: Optional[List[str]] = []
     comodidades: Optional[List[str]] = []
 

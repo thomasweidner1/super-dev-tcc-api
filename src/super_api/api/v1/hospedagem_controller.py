@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.super_api.auth.auth import get_current_user
-from src.super_api.database.modelos import HospedagemEntidade, ImagemHospedagemEntidade, ComodidadeEntidade
+from src.super_api.database.modelos import HospedagemEntidade, ImagemHospedagemEntidade, ComodidadeEntidade, \
+    EnderecoEntidade
 from src.super_api.dependencias import get_db
 from src.super_api.schemas.hospedagem_schema import HospedagemCadastro, HospedagemResponse
 
@@ -11,10 +12,7 @@ router = APIRouter(prefix="/hospedagem", tags=["Hospedagem"])
 @router.post("/cadastrar", response_model=HospedagemResponse, status_code=status.HTTP_201_CREATED)
 def cadastrar_hospedagem(form: HospedagemCadastro, db: Session = Depends(get_db), usuario=Depends(get_current_user)):
     if usuario.nivel not in ['host_standard', 'host_plus', 'host_premium']:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão"
-        )
+        raise HTTPException(status_code=401, detail="Usuário não tem permissão")
 
     limites = {
         'host_standard': 1,
@@ -27,11 +25,24 @@ def cadastrar_hospedagem(form: HospedagemCadastro, db: Session = Depends(get_db)
 
     if qtd_hosp >= limite:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=403,
             detail=f"Limite de hospedagens atingido para o plano {usuario.nivel}."
         )
 
     try:
+        novo_endereco = EnderecoEntidade(
+            estado=form.endereco.estado,
+            cidade=form.endereco.cidade,
+            rua=form.endereco.rua,
+            numero=form.endereco.numero,
+            bairro=form.endereco.bairro,
+            complemento=form.endereco.complemento,
+            cep=form.endereco.cep,
+            usuario_id=usuario.id
+        )
+        db.add(novo_endereco)
+        db.flush()
+
         nova_hospedagem = HospedagemEntidade(
             nome=form.nome,
             descricao=form.descricao,
@@ -40,7 +51,7 @@ def cadastrar_hospedagem(form: HospedagemCadastro, db: Session = Depends(get_db)
             tipo=form.tipo,
             ativo=form.ativo,
             usuario_id=usuario.id,
-            endereco_id=form.endereco_id,
+            endereco_id=novo_endereco.id
         )
 
         db.add(nova_hospedagem)
@@ -56,8 +67,11 @@ def cadastrar_hospedagem(form: HospedagemCadastro, db: Session = Depends(get_db)
 
         db.commit()
         db.refresh(nova_hospedagem)
-
         return nova_hospedagem
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro ao cadastrar hospedagem: {str(e)}")
 
     except Exception as e:
         db.rollback()
@@ -99,6 +113,7 @@ def listar_hospedagens(
             "tipo": h.tipo,
             "capacidade": h.capacidade,
             "cidade": h.endereco.cidade if h.endereco else None,
+            "fotos": h.imagens if h.imagens else [],
         }
         for h in hospedagens
     ]
@@ -124,7 +139,11 @@ def listar_hospedagens_resumo(db: Session = Depends(get_db)):
 
 @router.get("/detalhes/{hospedagem_id}")
 def hospedagem_detalhes(hospedagem_id: int, db: Session = Depends(get_db)):
-    hospedagem = db.query(HospedagemEntidade).filter(HospedagemEntidade.id == hospedagem_id).first()
+    hospedagem = (
+        db.query(HospedagemEntidade)
+        .filter(HospedagemEntidade.id == hospedagem_id)
+        .first()
+    )
 
     if not hospedagem:
         raise HTTPException(status_code=404, detail="Hospedagem não encontrada")
@@ -144,8 +163,13 @@ def hospedagem_detalhes(hospedagem_id: int, db: Session = Depends(get_db)):
             "numero": hospedagem.endereco.numero,
             "cidade": hospedagem.endereco.cidade,
             "estado": hospedagem.endereco.estado,
-        } if hospedagem.endereco else None
+        } if hospedagem.endereco else None,
+        "fotos": [
+            {"url": f.url}
+            for f in hospedagem.imagens
+        ],
     }
+
 
 @router.get("/minhas")
 def listar_minhas_hospedagens(

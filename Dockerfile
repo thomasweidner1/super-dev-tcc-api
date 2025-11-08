@@ -1,20 +1,20 @@
-# Usa a imagem oficial do Python 3.13
+# Usa imagem base leve do Python 3.13
 FROM python:3.13-slim
 
-# Define o diretório de trabalho dentro do container
+# Define o diretório de trabalho
 WORKDIR /app
 
-# Copia apenas os arquivos de dependências primeiro (para aproveitar cache)
+# Copia os arquivos de dependências
 COPY requirements.txt .
 
-# Instala dependências sem cache para reduzir tamanho da imagem
+# Instala as dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia o restante do código da aplicação
+# Copia o restante do código
 COPY . .
 
-# Expõe a porta da aplicação (mesma do docker-compose)
+# Expõe a porta da aplicação
 EXPOSE 8000
 
-# Comando padrão para rodar o backend (usando Uvicorn)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Comando para iniciar o servidor FastAPI
+CMD ["uvicorn", "src.super_api.main:app", "--host", "0.0.0.0", "--port", "8000"]

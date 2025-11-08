@@ -1,15 +1,14 @@
 services:
-  backend:
+  api:
     build: .
-    container_name: tcc-backend
-    restart: always
+    container_name: superdev_api
     ports:
       - "8000:8000"
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - SECRET_KEY=${SECRET_KEY}
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+      SECRET_KEY: ${SECRET_KEY}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: ${DB_PORT}
+    restart: always

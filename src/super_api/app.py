@@ -6,7 +6,8 @@ router = APIRouter()
 app = FastAPI()
 
 origins = [
-    "http://localhost:4200"
+    "http://localhost:4200",
+    "https://hoosty.com.br"
 ]
 
 app.add_middleware(

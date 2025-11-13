@@ -15,8 +15,8 @@ class Hospedagem(BaseModel):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True
 
 class HospedagemCadastro(Hospedagem):
     nome: str
@@ -31,8 +31,8 @@ class HospedagemCadastro(Hospedagem):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True
 
 class HospedagemEditar(Hospedagem):
     nome: Optional[str] = None
@@ -46,15 +46,15 @@ class HospedagemEditar(Hospedagem):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True
 
 class ImagemOut(BaseModel):
     id: int
     url: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ComodidadeOut(BaseModel):
@@ -62,7 +62,7 @@ class ComodidadeOut(BaseModel):
     nome: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class HospedagemResponse(Hospedagem):
@@ -75,5 +75,5 @@ class HospedagemResponse(Hospedagem):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True

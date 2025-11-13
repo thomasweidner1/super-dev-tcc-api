@@ -12,7 +12,7 @@ class Endereco(BaseModel):
     complemento: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class EnderecoEditar(BaseModel):
@@ -25,5 +25,5 @@ class EnderecoEditar(BaseModel):
     complemento: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 

@@ -30,8 +30,8 @@ class Usuario(BaseModel):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True
 
 class UsuarioCadastro(BaseModel):
     nome_completo: str = Field(alias="nomeCompleto")
@@ -44,8 +44,8 @@ class UsuarioCadastro(BaseModel):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True
 
 class UsuarioEditar(BaseModel):
     nome_completo: Optional[str] = Field(alias="nomeCompleto")
@@ -60,8 +60,8 @@ class UsuarioEditar(BaseModel):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True
 
 class UsuarioCartao(BaseModel):
     nivel: str
@@ -70,4 +70,4 @@ class UsuarioCartao(BaseModel):
     class Config:
         populate_by_name = True
         allow_populaion_by_field_name = True
-        orm_mode = True
+        from_attributes = True

@@ -17,5 +17,5 @@ app.include_router(hospedagem_controller.router)
 def home():
     return {"status": "API Hoosty funcionando 🚀"}
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     uvicorn.run("main:app")

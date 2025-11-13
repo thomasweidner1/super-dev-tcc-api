@@ -15,8 +15,8 @@ class CartaoResponse(BaseModel):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True
 
 class CartaoCadastro(BaseModel):
     numero: constr(min_length=12, max_length=30)
@@ -27,8 +27,8 @@ class CartaoCadastro(BaseModel):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
-        orm_mode = True
+        validate_by_name = True
+        from_attributes = True
 
     @validator("numero")
     def apenas_digitos_espacos(cls, v):
